@@ -1,8 +1,8 @@
-import roboticstoolbox as rtb
-import swift
 import numpy as np
-import spatialmath as sm
+import roboticstoolbox as rtb
 import spatialgeometry as sg
+import spatialmath as sm
+import swift
 
 # create swift instance (visualization)
 env = swift.Swift()
@@ -24,9 +24,10 @@ arrived = False
 dt = 0.01
 
 while not arrived:
-    v, arrived = rtb.p_servo(panda.fkine(panda.q), Tep, gain=1, threshold=0.01)
+    v, arrived = rtb.p_servo(panda.fkine(panda.q), Tep, gain=0.1, threshold=0.01)
     J = panda.jacobe(panda.q)
     panda.qd = np.linalg.pinv(J) @ v
     env.step(dt)
 
 env.hold()
+
