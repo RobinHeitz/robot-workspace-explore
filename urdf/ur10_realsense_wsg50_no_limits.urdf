@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot name="ur10_realsense_wsg50" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor">
+
+  <material name="LightGrey">
+    <color rgba="0.7 0.7 0.7 1.0"/>
+  </material>
+  
+  <material name="DarkGrey">
+    <color rgba="0.15 0.15 0.15 1.0"/>
+  </material>
+
+  <material name="LightBlue">
+    <color rgba="0.37 0.65 0.82 1.0"/>
+  </material>
+
+  <material name="Red">
+    <color rgba="1 0 0 1"/>
+  </material>
+
+  <material name="grey">
+    <color rgba="0.5 0.5 0.5 1"/>
+  </material>
+  
+  <material name="black">
+    <color rgba="0.4 0.4 0.4 1"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/base.dae"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/base.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="4.0"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.0061063308908" ixy="0.0" ixz="0.0" iyy="0.0061063308908" iyz="0.0" izz="0.01125"/>
+    </inertial>
+  </link>
+
+  <joint name="shoulder_pan_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.1273"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="330.0" velocity="0.5"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="shoulder_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/shoulder.dae"/>
+      </geometry>
+      <material name="LightBlue">
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/shoulder.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="7.778"/>
+      <inertia ixx="0.0314743125769" ixy="0.0" ixz="0.0" iyy="0.0314743125769" iyz="0.0" izz="0.021875625"/>
+    </inertial>
+  </link>
+
+  <joint name="shoulder_lift_joint" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <origin rpy="0 1.57079632679 0.0" xyz="0 0.220941 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="330.0"  velocity="0.5"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="upper_arm_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/upperarm.dae"/>
+      </geometry>
+      <material name="LightGrey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/upperarm.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="12.93"/>
+      <origin rpy="0 0 0" xyz="0.0 -0.045 0.306"/>
+      <inertia ixx="0.421753803798" ixy="0.0" ixz="0.0" iyy="0.421753803798" iyz="0.0" izz="0.036365625"/>
+    </inertial>
+  </link>
+
+  <joint name="elbow_joint" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.1719 0.612"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="150.0"  velocity=".5"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="forearm_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/forearm.dae"/>
+      </geometry>
+      <material name="LightGrey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/forearm.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.87"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.28615"/>
+      <inertia ixx="0.111069694097" ixy="0.0" ixz="0.0" iyy="0.111069694097" iyz="0.0" izz="0.010884375"/>
+    </inertial>
+  </link>
+
+  <joint name="wrist_1_joint" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_1_link"/>
+    <origin rpy="0.0 1.57079632679 0.0" xyz="0 0 0.5723"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="54.0" velocity=".5"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="wrist_1_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/wrist1.dae"/>
+      </geometry>
+      <material name="LightBlue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/wrist1.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.96"/>
+      <origin rpy="0 0 0" xyz="0.0 0.1149 0.0"/>
+      <inertia ixx="0.0051082479567" ixy="0.0" ixz="0.0" iyy="0.0051082479567" iyz="0.0" izz="0.0055125"/>
+    </inertial>
+  </link>
+
+  <joint name="wrist_2_joint" type="revolute">
+    <parent link="wrist_1_link"/>
+    <child link="wrist_2_link"/>
+    <origin rpy="0.0 0.0 3.141592653589793" xyz="0 0.1149 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="54.0"  velocity=".5"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+  
+  <link name="wrist_2_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/wrist2.dae"/>
+      </geometry>
+      <material name="LightGrey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/wrist2.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.96"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.1157"/>
+      <inertia ixx="0.0051082479567" ixy="0.0" ixz="0.0" iyy="0.0051082479567" iyz="0.0" izz="0.0055125"/>
+    </inertial>
+  </link>
+
+  <joint name="wrist_3_joint" type="revolute">
+    <parent link="wrist_2_link"/>
+    <child link="wrist_3_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.1157"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="54.0" velocity=".5"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+  
+  <link name="wrist_3_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/wrist3.dae"/>
+      </geometry>
+      <material name="LightGrey"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/collision/wrist3.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.202"/>
+      <origin rpy="1.57079632679 0 0" xyz="0.0 0.07695 0.0"/>
+      <inertia ixx="0.000117921661165" ixy="0.0" ixz="0.0" iyy="0.000117921661165" iyz="0.0" izz="0.000204525"/>
+    </inertial>
+  </link>
+
+
+
+<joint name="adapter_joint" type="fixed">
+    <parent link="wrist_3_link"/>
+    <child link="adapter"/>
+    <origin rpy="3.141592653589793 1.5707963267948966 0" xyz="0 0.092 0"/>
+  </joint>
+  
+
+  <link name="adapter">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/Adapter_neu_petar_old.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0 " xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../meshes/collision/Adapter_neu_petar.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.515"/>
+      <origin rpy="1.57079632679 0 0" xyz="0.0 0.07695 0.0"/>
+      <inertia ixx="0.0026144777968" ixy="0.000062880611072" ixz="0.0000026649843589" iyy="0.00038169056955" iyz="0.000032922604095" izz="0.0025985874630"/>
+    </inertial>
+  </link>
+
+
+  <joint name="wsg50_anterior_gripper_joint" type="fixed">
+    <origin rpy="3.141592653589793 1.5707963267948966 1.5707963267948966" xyz="0 -0.225 0  "/>
+    <parent link="adapter"/>
+    <child link="wsg50_base_link"/>
+  </joint>
+
+  <link name="wsg50_base_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/WSG50_110.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <inertial>
+      <mass value="0.25"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <geometry>
+        <mesh filename="../meshes/collision/WSG50_110.stl" scale="1 1 1"/>
+      </geometry>
+    </collision>
+  </link>
+
+
+  <joint name="wsg50_finger_left_joint" type="prismatic">
+    <limit effort="1.0" lower="0" upper="0.052" velocity="1.0"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="wsg50_base_link"/>
+    <child link="wsg50_gripper_left"/>
+    <dynamics damping="100" friction="100"/>
+    <axis xyz="-1 0 0"/>
+    <limit effort="100" velocity="100"/>
+  </joint>
+
+<link name="wsg50_gripper_left">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/GUIDE_WSG50_110.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../meshes/collision/GUIDE_WSG50_110.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="wsg50_guide_joint_finger_left" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.024"/>
+    <parent link="wsg50_gripper_left"/>
+    <child link="wsg50_finger_left"/>
+    <dynamics damping="100" friction="100"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100" velocity="100"/>
+  </joint>
+
+  <link name="wsg50_finger_left">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/finger.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../meshes/collision/finger.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+
+    <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+  </link>
+
+
+  <joint name="wsg50_finger_right_joint" type="prismatic">
+    <limit effort="1.0" lower="-0.052" upper="0" velocity="1.0"/>
+    <origin rpy="0 0 3.14159" xyz="0 0 0"/>
+    <parent link="wsg50_base_link"/>
+    <child link="wsg50_gripper_right"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="100" friction="100"/>
+    <limit effort="100" velocity="100"/>
+    <mimic joint="wsg50_finger_left_joint" multiplier="-1"/>
+  </joint>
+
+  <link name="wsg50_gripper_right">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/GUIDE_WSG50_110.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.4 0.4 0.4 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../meshes/collision/GUIDE_WSG50_110.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+
+    <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+  </link>
+
+  <joint name="wsg50_guide_joint_finger_right" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.024"/>
+    <parent link="wsg50_gripper_right"/>
+    <child link="wsg50_finger_right"/>
+    <dynamics damping="100" friction="100"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100" velocity="100"/>
+  </joint>
+  
+  <link name="wsg50_finger_right">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/visual/finger.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../meshes/collision/finger.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+    <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+  </link>
+  
+  <joint name="gripper_center_point_joint" type="fixed">
+    <origin rpy="3.141592653589793 0 1.5707963267948966" xyz="0 0 0.16"/>
+    <parent link="wsg50_base_link"/>
+    <child link="gripper_center_point"/>
+    <limit effort="100" velocity="100"/>
+  </joint>
+
+  <link name="gripper_center_point">
+    <visual>
+      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <geometry>
+       <box size="0.005 0.005 0.005"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <mass value="0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+    </inertial>
+  </link>
+  
+</robot>
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
