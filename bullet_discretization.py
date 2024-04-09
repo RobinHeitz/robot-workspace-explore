@@ -25,8 +25,10 @@ def main():
     print("Main")
     p.connect(p.GUI)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
+    # p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
+    p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
     p.resetDebugVisualizerCamera(
-        cameraDistance=1.5,
+        cameraDistance=2.5,
         cameraYaw=0,
         cameraPitch=-40,
         cameraTargetPosition=[0, -0.4, 0.2],
@@ -53,22 +55,30 @@ def main():
         globalScaling=1.0,
     )
 
-    p.loadURDF(
-        "urdf/cube.urdf",
-        [0, 0, 0],
-        p.getQuaternionFromEuler([0, 0, 0]),
-        useFixedBase=True,
-        globalScaling=10000.0,
-    )
+    # p.loadURDF(
+    #     "urdf/cube.urdf",
+    #     [0, 0, 0],
+    #     p.getQuaternionFromEuler([0, 0, 0]),
+    #     useFixedBase=True,
+    #     globalScaling=10.0,
+    # )
     # Set initial pos of robot
     rest_pose = [0, -pi / 2, pi / 2, -pi / 2, pi / 2, pi]
+
     for joint, angle in enumerate(rest_pose):
         p.resetJointState(robot, joint, angle)
 
     link_state = p.getLinkState(robot, 2)
 
-    time.sleep(4)
-    exit()
+    p.createVisualShape(
+        shapeType=p.GEOM_SPHERE,
+        radius=1.4,
+    )
+
+    collisionShapeId = p.createVisualShape(
+        shapeType=p.GEOM_MESH,
+        fileName="duck_vhacd.obj",
+    )
 
     for i in range(400):
         new_joint_state = controller(i)
