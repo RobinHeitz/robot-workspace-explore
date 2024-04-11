@@ -9,6 +9,32 @@ import swift
 # create swift instance (visualization)
 
 
+def add_collision_shape(robot, env):
+    print("### add collision shape")
+    q0 = robot.q[0]
+    link0 = robot.links[0]
+    a0 = link0.A(q0)
+    c0 = sg.Cylinder()
+
+    s0 = sg.Sphere(radius=0.08, base=a0, color=[1, 0, 1, 0.4])
+    env.add(s0)
+
+    q1 = robot.q[1]
+    link1 = robot.links[1]
+    a1 = link1.A(q1)
+    s1 = sg.Sphere(radius=0.08, base=a1, color=[1, 0, 1, 0.4])
+    env.add(s1)
+
+    q2 = robot.q[2]
+    link2 = robot.links[2]
+    a2 = link2.A(q2)
+    # print(a0)
+    # print(a1)
+    print(a1 * a2)
+    s2 = sg.Sphere(radius=0.08, base=a2 * a1, color=[1, 0, 1, 0.4])
+    env.add(s2)
+
+
 def get_mesh_path(file):
 
     return os.path.join(
@@ -24,7 +50,7 @@ env.launch(realtime=True)
 
 panda = rtb.models.Panda()
 # env.add(panda)
-env.add(panda, robot_alpha=0.0, collision_alpha=0.5)
+env.add(panda, robot_alpha=1.0, collision_alpha=0.2)
 panda.q = panda.qr
 # panda.qd = [0.1, 0, 0, 0, 0, 0, 0]
 
@@ -51,13 +77,6 @@ env.add(axes)
 arrived = False
 dt = 0.01
 
-print(panda.links[0])
-print(panda.links[1])
-print(panda.links[2])
-print(panda.links[3])
-print(panda.links[4])
-print(panda.links[5])
-
 # env.hold()
 
 
@@ -67,15 +86,6 @@ while not arrived:
     panda.qd = np.linalg.pinv(J) @ v
     env.step(dt)
 
-print(panda.q)
-
-# link0 = sg.Cylinder(radius=0.06, length=0.03, pose=T0, color=col)
-
-
-# link0 = sg.Mesh(
-#     get_mesh_path("hand.dae"),
-#     base=lTep,
-#     color=[0, 1, 0.4],
-# )
+add_collision_shape(panda, env)
 
 env.hold()

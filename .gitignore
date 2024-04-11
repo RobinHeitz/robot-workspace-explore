@@ -1,4 +1,5 @@
-/env
-/robotics-toolbox-python
+env
 
 *.pyc
+
+__pycache__
