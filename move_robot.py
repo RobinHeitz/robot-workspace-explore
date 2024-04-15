@@ -12,31 +12,9 @@ import spatialgeometry as sg
 import spatialmath as sm
 import swift
 
-
-def add_collision_shape(robot, env):
-    print("### add collision shape")
-    q0 = robot.q[0]
-    link0 = robot.links[0]
-    a0 = link0.A(q0)
-    c0 = sg.Cylinder()
-
-    s0 = sg.Sphere(radius=0.08, base=a0, color=[1, 0, 1, 0.4])
-    env.add(s0)
-
-    q1 = robot.q[1]
-    link1 = robot.links[1]
-    a1 = link1.A(q1)
-    s1 = sg.Sphere(radius=0.08, base=a1, color=[1, 0, 1, 0.4])
-    env.add(s1)
-
-    q2 = robot.q[2]
-    link2 = robot.links[2]
-    a2 = link2.A(q2)
-    # print(a0)
-    # print(a1)
-    print(a1 * a2)
-    s2 = sg.Sphere(radius=0.08, base=a2 * a1, color=[1, 0, 1, 0.4])
-    env.add(s2)
+col1 = [1, 0, 1, 0.4]
+col2 = [1, 1, 0, 0.4]
+col3 = [0, 1, 1, 0.4]
 
 
 def get_mesh_path(file):
@@ -48,49 +26,89 @@ def get_mesh_path(file):
     )
 
 
-def create_collision_shapes2(q, env, robot):
-    """Create collision shape for one joint configuration q"""
-    print("create_collision_shapes")
-
-    T_prev = robot.base
-    for i, link in enumerate(robot.links):
-        if i == 5:
-            break
-
-        q = robot.q[i]
-        a = link.A(q)
-        T_cur = T_prev * a
-
-        axes = sg.Axes(length=0.25, pose=T_cur)
-        env.add(axes)
-
-        T_prev = T_cur
-
-        print("### Link index ", i, " joint for index: ", q)
-        print(T_cur)
-
-    s = sg.Sphere(radius=0.2, pose=sm.SE3(), color=[1, 0, 1, 0.4])
-    env.add(s)
-
-
 def create_collision_shapes(q, env, robot):
     """Create collision shape for one joint configuration q"""
-    print("create_collision_shapes")
 
-    for i, link in enumerate(robot.links):
-        if i == 7:
-            break
+    # Link 0
+    l0 = 0.3
+    c0 = sg.Cylinder(0.07, l0, pose=robot.base * sm.SE3.Tz(l0 / 2), color=col1)
+    env.add(c0)
+    c = sg.Sphere(0.09, pose=robot.base * sm.SE3.Tx(-0.1) * sm.SE3.Tz(0.05), color=col1)
+    env.add(c)
 
-        T = robot.fkine(q, link, robot.links[0])
-        if i in [0, 1]:
-            axes = sg.Axes(length=0.25, pose=T)
-            env.add(axes)
-
-        print("### Link index ", i)
-        print(T)
-
-    s = sg.Sphere(radius=0.2, pose=sm.SE3(), color=[1, 0, 1, 0.4])
+    # Link 1
+    l1 = 0.3
+    T1 = robot.fkine(q, robot.links[1], robot.links[0])
+    a = sg.Axes(length=0.3, pose=T1)
+    # env.add(a)
+    s = sg.Sphere(0.07, pose=T1, color=col2)
     env.add(s)
+    s = sg.Sphere(0.07, pose=T1 * sm.SE3.Ty(0.07), color=col2)
+    env.add(s)
+    s = sg.Sphere(0.07, pose=T1 * sm.SE3.Ty(-0.07), color=col2)
+    env.add(s)
+
+    # Link 2
+    l2 = 0.3
+    T2 = robot.fkine(q, robot.links[2], robot.links[0])
+    a = sg.Axes(length=0.3, pose=T2)
+    env.add(a)
+    c = sg.Cylinder(
+        0.07, l2, pose=T2 * sm.SE3.Rx(np.pi / 2) * sm.SE3.Tz(l2 / 2), color=col3
+    )
+    env.add(c)
+
+    # link 3
+    l3 = 0.3
+    T3 = robot.fkine(q, robot.links[3], robot.links[0])
+    a = sg.Axes(length=0.3, pose=T3)
+    env.add(a)
+    s1 = sg.Sphere(0.07, pose=T3 * sm.SE3.Ty(0.07) * sm.SE3.Tx(0.07), color=col1)
+    s2 = sg.Sphere(0.07, pose=T3 * sm.SE3.Ty(-0.07) * sm.SE3.Tx(0.07), color=col1)
+    s3 = sg.Sphere(0.07, pose=T3 * sm.SE3.Tx(0.07), color=col1)
+    env.add(s1)
+    env.add(s2)
+    env.add(s3)
+
+    # link 4
+    l4 = 0.44
+    T4 = robot.fkine(q, robot.links[4], robot.links[0])
+    a = sg.Axes(length=0.3, pose=T4)
+    # env.add(a)
+    c = sg.Cylinder(
+        0.09,
+        l4,
+        pose=T4
+        * sm.SE3.Rx(np.pi / 2)
+        * sm.SE3.Tx(-0.09)
+        * sm.SE3.Tz(-l4 / 2)
+        * sm.SE3.Ty(-0.02),
+        color=col2,
+    )
+    env.add(c)
+
+    # Link 5
+    T5 = robot.fkine(q, robot.links[5], robot.links[0])
+    a = sg.Axes(length=0.3, pose=T5)
+    # env.add(a)
+    s = sg.Sphere(0.07, pose=T5, color=col3)
+    env.add(s)
+
+    s = sg.Sphere(0.07, pose=T5 * sm.SE3.Ty(0.1), color=col3)
+    env.add(s)
+
+    # Link 6
+    l6 = 0.35
+    T6 = robot.fkine(q, robot.links[6], robot.links[0])
+    a = sg.Axes(length=0.3, pose=T6)
+    env.add(a)
+    c = sg.Cylinder(
+        0.07,
+        l6,
+        pose=T6 * sm.SE3.Rx(np.pi / 2) * sm.SE3.Tz(l6 / 2 - 0.1) * sm.SE3.Tx(0.09),
+        color=col1,
+    )
+    env.add(c)
 
 
 def main():
@@ -103,7 +121,7 @@ def main():
     panda = rtb.models.Panda()
     Tbase = sm.SE3.Tx(-0.3) * sm.SE3.Ty(-0.3)
     panda.base = Tbase
-    panda.q = panda.qr
+    # panda.q = panda.qr
     env.add(panda, robot_alpha=1.0, collision_alpha=0.2)
 
     # use_traj = True
