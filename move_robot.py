@@ -1,12 +1,16 @@
+"""
+This module should demonstrate how to 'sense' collision objects. The goal is that the user uses free-drive to move along the part where no collisions are to be expected.
+Based on the geometry of the robot, the 'useable' workspace can be extracted. The inverse of that should approximate the collision object.
+"""
+
 import os
+from datetime import datetime
 
 import numpy as np
 import roboticstoolbox as rtb
 import spatialgeometry as sg
 import spatialmath as sm
 import swift
-
-# create swift instance (visualization)
 
 
 def add_collision_shape(robot, env):
@@ -44,48 +48,100 @@ def get_mesh_path(file):
     )
 
 
-col = [1, 0, 1]
-env = swift.Swift()
-env.launch(realtime=True)
+def create_collision_shapes2(q, env, robot):
+    """Create collision shape for one joint configuration q"""
+    print("create_collision_shapes")
 
-panda = rtb.models.Panda()
-# env.add(panda)
-env.add(panda, robot_alpha=1.0, collision_alpha=0.2)
-panda.q = panda.qr
-# panda.qd = [0.1, 0, 0, 0, 0, 0, 0]
+    T_prev = robot.base
+    for i, link in enumerate(robot.links):
+        if i == 5:
+            break
 
-# Messing around with sphere etc.
-lTep = (
-    sm.SE3.Tx(0.45)
-    * sm.SE3.Ty(0.25)
-    * sm.SE3.Tz(0.3)
-    * sm.SE3.Rx(np.pi)
-    * sm.SE3.Rz(np.pi / 2)
-)
+        q = robot.q[i]
+        a = link.A(q)
+        T_cur = T_prev * a
 
-l_target = sg.Sphere(0.02, color=[0.2, 0.4, 0.65, 1.0], pose=lTep)
-l_target_frame = sg.Axes(0.1, base=lTep)
-env.add(l_target)
-env.add(l_target_frame)
+        axes = sg.Axes(length=0.25, pose=T_cur)
+        env.add(axes)
 
-# Set goal pose
-Tep = panda.fkine(panda.q) * sm.SE3.Tx(0.2) * sm.SE3.Ty(0.3) * sm.SE3.Tz(0.35)
+        T_prev = T_cur
 
-axes = sg.Axes(length=0.1, base=Tep)
-env.add(axes)
+        print("### Link index ", i, " joint for index: ", q)
+        print(T_cur)
 
-arrived = False
-dt = 0.01
-
-# env.hold()
+    s = sg.Sphere(radius=0.2, pose=sm.SE3(), color=[1, 0, 1, 0.4])
+    env.add(s)
 
 
-while not arrived:
-    v, arrived = rtb.p_servo(panda.fkine(panda.q), Tep, gain=8.1, threshold=0.01)
-    J = panda.jacobe(panda.q)
-    panda.qd = np.linalg.pinv(J) @ v
-    env.step(dt)
+def create_collision_shapes(q, env, robot):
+    """Create collision shape for one joint configuration q"""
+    print("create_collision_shapes")
 
-add_collision_shape(panda, env)
+    for i, link in enumerate(robot.links):
+        if i == 7:
+            break
 
-env.hold()
+        T = robot.fkine(q, link, robot.links[0])
+        if i in [0, 1]:
+            axes = sg.Axes(length=0.25, pose=T)
+            env.add(axes)
+
+        print("### Link index ", i)
+        print(T)
+
+    s = sg.Sphere(radius=0.2, pose=sm.SE3(), color=[1, 0, 1, 0.4])
+    env.add(s)
+
+
+def main():
+    """Moves robot and stores the trajectory."""
+
+    col = [1, 0, 1]
+    env = swift.Swift()
+    env.launch(realtime=True)
+
+    panda = rtb.models.Panda()
+    Tbase = sm.SE3.Tx(-0.3) * sm.SE3.Ty(-0.3)
+    panda.base = Tbase
+    panda.q = panda.qr
+    env.add(panda, robot_alpha=1.0, collision_alpha=0.2)
+
+    # use_traj = True
+    mode = "None"
+
+    if mode == "tra":
+        dt = 0.1
+        traj = rtb.tools.trajectory.jtraj(panda.qz, panda.qr, 20)
+
+        for q in traj.q:
+            panda.q = q
+            env.step(dt)
+
+        create_collision_shapes(traj.q[-1], env, panda)
+        env.hold()
+
+    elif mode == "gain":
+        Tep = panda.fkine(panda.q) * sm.SE3.Tx(0.2) * sm.SE3.Ty(0.3) * sm.SE3.Tz(0.35)
+
+        arrived = False
+        dt = 0.01
+
+        while not arrived:
+            v, arrived = rtb.p_servo(
+                panda.fkine(panda.q), Tep, gain=3.0, threshold=0.01
+            )
+            J = panda.jacobe(panda.q)
+            panda.qd = np.linalg.pinv(J) @ v
+            env.step(dt)
+
+        print("arrived")
+        create_collision_shapes(panda.q, env, panda)
+        env.hold()
+
+    else:
+        create_collision_shapes(panda.q, env, panda)
+        env.hold()
+
+
+if __name__ == "__main__":
+    main()
