@@ -174,7 +174,7 @@ if __name__ == "__main__":
     # Load controller
     fake_controller = kwargs.pop("fake_controller")
     if fake_controller:
-        controller = FakeController(buffer_duration=0.02)
+        controller = FakeController(buffer_duration=0.2)
     else:
         print("There is no real controller yet! Use -f")
         exit()
