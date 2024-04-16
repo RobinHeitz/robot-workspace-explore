@@ -12,9 +12,17 @@ import spatialgeometry as sg
 import spatialmath as sm
 import swift
 
-col1 = [1, 0, 1, 0.4]
-col2 = [1, 1, 0, 0.4]
-col3 = [0, 1, 1, 0.4]
+from fake_controller import FakeController
+
+cols = [
+    [1, 0, 1, 0.4],
+    [1, 1, 0, 0.4],
+    [0, 1, 1, 0.4],
+    [0.2, 0.8, 0, 0.4],
+    [0.2, 0, 0.8, 0.4],
+    [0, 0.5, 0.8, 0.4],
+    [0.4, 0.5, 0.8, 0.4],
+]
 
 
 def get_mesh_path(file):
@@ -24,6 +32,78 @@ def get_mesh_path(file):
         "./robotics-toolbox-python/rtb-data/rtbdata/xacro/franka_description/meshes/visual/",
         file,
     )
+
+
+def draw_axes(q, env, robot):
+    """Draw joint axes for current joint configuration"""
+    for i in range(1, 9):
+        world = robot.links[0]
+        link = robot.links[i]
+        T = robot.fkine(q, link, world)
+        a = sg.Axes(length=0.3, pose=T)
+        env.add(a)
+
+
+def create_collision_shapes_ur5(q, env, robot):
+    """Create collision shapes for UR5"""
+    world = robot.links[0]
+
+    # Base Link
+    link = robot.links[1]
+    T = robot.fkine(q, link, world)
+    l = 0.16
+    c = sg.Cylinder(0.06, l, pose=T * sm.SE3.Tz(l / 2), color=cols[0])
+    env.add(c)
+
+    # Shoulder Link
+    link = robot.links[2]
+    T = robot.fkine(q, link, world)
+    l = 0.21
+    c = sg.Cylinder(
+        0.07, l, pose=T * sm.SE3.Rx(-np.pi / 2) * sm.SE3.Tz(l / 2), color=cols[1]
+    )
+    env.add(c)
+
+    # Upper Arm Link
+    link = robot.links[3]
+    T = robot.fkine(q, link, world)
+    l = 0.50
+    c = sg.Cylinder(0.07, l, pose=T * sm.SE3.Tz(l / 2), color=cols[2])
+    env.add(c)
+
+    # Forearm Link
+    link = robot.links[4]
+    T = robot.fkine(q, link, world)
+    l = 0.50
+    c = sg.Cylinder(0.05, l, pose=T * sm.SE3.Tz(l / 2), color=cols[3])
+    env.add(c)
+    s = sg.Sphere(0.07, pose=T * sm.SE3.Ty(0.04), color=cols[3])
+    env.add(s)
+
+    # Wrist 1
+    link = robot.links[5]
+    T = robot.fkine(q, link, world)
+    l = 0.20
+    c = sg.Cylinder(
+        0.04, l, pose=T * sm.SE3.Rx(-np.pi / 2) * sm.SE3.Tz(l / 2 - 0.06), color=cols[4]
+    )
+    env.add(c)
+
+    # Wrist 2
+    link = robot.links[6]
+    T = robot.fkine(q, link, world)
+    l = 0.20
+    c = sg.Cylinder(0.04, l, pose=T * sm.SE3.Tz(l / 2 - 0.06), color=cols[5])
+    env.add(c)
+
+    # Wrist 3
+    link = robot.links[7]
+    T = robot.fkine(q, link, world)
+    l = 0.15
+    c = sg.Cylinder(
+        0.04, l, pose=T * sm.SE3.Rx(np.pi / 2) * sm.SE3.Tz(-0.01), color=cols[6]
+    )
+    env.add(c)
 
 
 def create_collision_shapes(q, env, robot):
@@ -114,7 +194,6 @@ def create_collision_shapes(q, env, robot):
 def main():
     """Moves robot and stores the trajectory."""
 
-    col = [1, 0, 1]
     env = swift.Swift()
     env.launch(realtime=True)
 
@@ -124,8 +203,17 @@ def main():
     # panda.q = panda.qr
     env.add(panda, robot_alpha=1.0, collision_alpha=0.2)
 
+    # UR5
+    controller = FakeController()
+
+    ur = rtb.models.UR5()
+    ur.q = controller.q_start
+    BaseUR = sm.SE3.Tx(0.3) * sm.SE3.Ty(0.3)
+    ur.base = BaseUR
+    env.add(ur, robot_alpha=0.8, collision_alpha=0)
+
     # use_traj = True
-    mode = "None"
+    mode = "ur"
 
     if mode == "tra":
         dt = 0.1
@@ -154,6 +242,19 @@ def main():
 
         print("arrived")
         create_collision_shapes(panda.q, env, panda)
+        env.hold()
+
+    elif mode == "ur":
+        start = datetime.now()
+        dt = 0.05
+        while True:
+            if (datetime.now() - start).total_seconds() > 2.7:
+                break
+            ur.q = controller.get_joint_angles()
+            env.step(dt)
+
+        draw_axes(ur.q, env, ur)
+        create_collision_shapes_ur5(ur.q, env, ur)
         env.hold()
 
     else:
