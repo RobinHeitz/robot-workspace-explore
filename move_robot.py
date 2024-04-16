@@ -14,6 +14,7 @@ import spatialmath as sm
 import swift
 
 from fake_controller import FakeController
+from mesh_generation import create_mesh
 
 
 def get_colors(alpha=0.4, unique=True):
@@ -44,6 +45,7 @@ def draw_axes(q, env, robot):
 
 def create_collision_shapes_ur5(q, env, robot):
     """Create collision shapes for UR5"""
+    shapes = list()
     world = robot.links[0]
 
     # Base Link
@@ -51,6 +53,7 @@ def create_collision_shapes_ur5(q, env, robot):
     T = robot.fkine(q, link, world)
     l = 0.16
     c = sg.Cylinder(0.06, l, pose=T * sm.SE3.Tz(l / 2), color=cols[0])
+    shapes.append(c.to_dict())
     env.add(c)
 
     # Shoulder Link
@@ -60,6 +63,7 @@ def create_collision_shapes_ur5(q, env, robot):
     c = sg.Cylinder(
         0.07, l, pose=T * sm.SE3.Rx(-np.pi / 2) * sm.SE3.Tz(l / 2), color=cols[1]
     )
+    shapes.append(c.to_dict())
     env.add(c)
 
     # Upper Arm Link
@@ -67,6 +71,7 @@ def create_collision_shapes_ur5(q, env, robot):
     T = robot.fkine(q, link, world)
     l = 0.50
     c = sg.Cylinder(0.07, l, pose=T * sm.SE3.Tz(l / 2), color=cols[2])
+    shapes.append(c.to_dict())
     env.add(c)
 
     # Forearm Link
@@ -74,9 +79,11 @@ def create_collision_shapes_ur5(q, env, robot):
     T = robot.fkine(q, link, world)
     l = 0.50
     c = sg.Cylinder(0.05, l, pose=T * sm.SE3.Tz(l / 2), color=cols[3])
+    shapes.append(c.to_dict())
     env.add(c)
     s = sg.Sphere(0.07, pose=T * sm.SE3.Ty(0.04), color=cols[3])
     env.add(s)
+    shapes.append(s.to_dict())
 
     # Wrist 1
     link = robot.links[5]
@@ -86,6 +93,7 @@ def create_collision_shapes_ur5(q, env, robot):
         0.04, l, pose=T * sm.SE3.Rx(-np.pi / 2) * sm.SE3.Tz(l / 2 - 0.06), color=cols[4]
     )
     env.add(c)
+    shapes.append(c.to_dict())
 
     # Wrist 2
     link = robot.links[6]
@@ -93,6 +101,7 @@ def create_collision_shapes_ur5(q, env, robot):
     l = 0.20
     c = sg.Cylinder(0.04, l, pose=T * sm.SE3.Tz(l / 2 - 0.06), color=cols[5])
     env.add(c)
+    shapes.append(c.to_dict())
 
     # Wrist 3
     link = robot.links[7]
@@ -102,6 +111,9 @@ def create_collision_shapes_ur5(q, env, robot):
         0.04, l, pose=T * sm.SE3.Rx(np.pi / 2) * sm.SE3.Tz(-0.01), color=cols[6]
     )
     env.add(c)
+    shapes.append(c.to_dict())
+
+    return shapes
 
 
 def main(controller, duration, *args, **kwargs):
@@ -130,9 +142,18 @@ def main(controller, duration, *args, **kwargs):
     controller.stop_buffering()
     draw_axes(ur.q, env, ur)
     trajectories = controller.get_buffer()
-    print(f"*** Start drawing collision shapes for {len(trajectories)} trajectories")
-    for q in trajectories:
-        create_collision_shapes_ur5(q, env, ur)
+
+    only_last_pose = kwargs.get("once", False)
+    if only_last_pose:
+        shapes = create_collision_shapes_ur5(trajectories[-1], env, ur)
+    else:
+        print(
+            f"*** Start drawing collision shapes for {len(trajectories)} trajectories"
+        )
+        for q in trajectories:
+            create_collision_shapes_ur5(q, env, ur)
+
+    create_mesh(shapes)
     env.hold()
 
 
@@ -164,6 +185,13 @@ if __name__ == "__main__":
         type=float,
         default=2.0,
         help="Duration of simulation [seconds]",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--once",
+        action="store_true",
+        help="Only visualize last pose of robot instead of complete trajectory.",
     )
 
     args = parser.parse_args()
