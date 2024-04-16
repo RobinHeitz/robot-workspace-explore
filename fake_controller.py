@@ -13,11 +13,11 @@ class FakeController:
     j0_freq = 4
     j2_freq = 4
 
-    def __init__(self, buffer_duration):
+    def __init__(self, sample_frequency_hz=10):
         self._q = self.q_start.copy()
         self.stop_flag = False
 
-        self.buffer_duration = buffer_duration
+        self.sample_frequency_hz = sample_frequency_hz
         self.buffer = []
 
         self.t = threading.Thread(target=self._alter_joints, daemon=True)
@@ -46,7 +46,9 @@ class FakeController:
             deviation = 0.7 * np.sin(np.pi / self.j2_freq * total_secs)
             new_q[2] = self.q_start[2] + deviation
 
-            if (datetime.now() - local_start).total_seconds() >= self.buffer_duration:
+            if (
+                datetime.now() - local_start
+            ).total_seconds() >= 1 / self.sample_frequency_hz:
                 self.buffer.append(new_q.copy())
                 local_start = datetime.now()
 
@@ -61,7 +63,7 @@ class FakeController:
 
 
 if __name__ == "__main__":
-    f = FakeController(buffer_duration=0.02)
+    f = FakeController(sample_frequency_hz=1 / 0.02)
     f.start_buffering()
     time.sleep(3.33)
     f.stop_buffering()

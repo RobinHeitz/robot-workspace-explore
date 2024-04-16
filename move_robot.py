@@ -144,14 +144,19 @@ def main(controller, duration, *args, **kwargs):
     trajectories = controller.get_buffer()
 
     only_last_pose = kwargs.get("once", False)
+    shapes = []
+
     if only_last_pose:
-        shapes = create_collision_shapes_ur5(trajectories[-1], env, ur)
+        shapes_last_pose = create_collision_shapes_ur5(trajectories[-1], env, ur)
+        shapes.extend(shapes_last_pose)
+
     else:
         print(
             f"*** Start drawing collision shapes for {len(trajectories)} trajectories"
         )
         for q in trajectories:
-            create_collision_shapes_ur5(q, env, ur)
+            shapes_cur_pose = create_collision_shapes_ur5(q, env, ur)
+            shapes.extend(shapes_cur_pose)
 
     create_mesh(shapes)
     env.hold()
@@ -165,6 +170,14 @@ if __name__ == "__main__":
         "--fake-controller",
         action="store_true",
         help="Use fake controller for joint trajectory generation.",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--rate",
+        type=int,
+        default=10,
+        help="Sample frequency of the buffer in Hz. 20 means the delay between each joint configuration is 1/20 seconds",
     )
 
     parser.add_argument(
@@ -202,7 +215,7 @@ if __name__ == "__main__":
     # Load controller
     fake_controller = kwargs.pop("fake_controller")
     if fake_controller:
-        controller = FakeController(buffer_duration=0.2)
+        controller = FakeController(sample_frequency_hz=kwargs.get("rate", 10))
     else:
         print("There is no real controller yet! Use -f")
         exit()

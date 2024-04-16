@@ -2,4 +2,7 @@ env
 
 *.pyc
 
+
+scad_files/
+
 __pycache__

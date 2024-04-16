@@ -4,16 +4,14 @@ Openscad expects [mm] as it seems.
 """
 
 import math
+import os
+import subprocess
+import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import openpyscad as ops
 import spatialgeometry as sg
-
-# c1 = ops.Cube([10, 20, 10], [10, 10, 10]).translate([1, 2, 3])
-# s = ops.Sphere(10)
-#
-# (c1 + s).write("scad_files/test.scad")
 
 
 def quaternion_to_euler_angle(x, y, z, w):
@@ -37,7 +35,6 @@ def quaternion_to_euler_angle(x, y, z, w):
 
 def _create_sphere(t, q, radius):
     eulers = quaternion_to_euler_angle(*q)
-    print(eulers)
     s = ops.Sphere(radius * 1000, center=[i * 1000 for i in t]).translate(
         [i * 1000 for i in t]
     )
@@ -46,7 +43,6 @@ def _create_sphere(t, q, radius):
 
 def _create_cylinder(t, q, radius, length):
     eulers = quaternion_to_euler_angle(*q)
-    print(eulers)
     c = (
         ops.Cylinder(length * 1000, radius * 1000, center=True)
         .rotate(eulers)
@@ -76,6 +72,18 @@ def create_mesh(sg_shapes):
             raise Exception(f"stype {shape['stype']} is not implemented yet!")
 
     u.write("scad_files/mesh.scad")
+    run_docker_cmd()
+
+
+def run_docker_cmd():
+    print("*** start running docker container")
+    cmd = "docker run --rm -v /Users/robin/dev/robot-workspace-explore/scad_files/:/scad_files/  openscad/openscad:latest openscad -o /scad_files/output.stl /scad_files/mesh.scad"
+
+    process = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+    )
+    process.wait()
+    print("*** finished docker command!")
 
 
 if __name__ == "__main__":
