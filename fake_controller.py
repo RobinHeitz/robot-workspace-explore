@@ -10,40 +10,60 @@ import numpy as np
 class FakeController:
 
     q_start = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
+    j0_freq = 4
+    j2_freq = 4
 
-    def __init__(self, freq=4):
+    def __init__(self, buffer_duration):
         self._q = self.q_start.copy()
-        self.freq = freq
+        self.stop_flag = False
 
-        self.start_time = datetime.now()
+        self.buffer_duration = buffer_duration
+        self.buffer = []
 
-        self.thread = threading.Thread(target=self._alter_joints)
-        self.thread.daemon = True
-        self.thread.start()
+        self.t = threading.Thread(target=self._alter_joints, daemon=True)
+
+    def start_buffering(self):
+        self.t.start()
+
+    def stop_buffering(self):
+        self.stop_flag = True
 
     def _alter_joints(self):
-        dt = 0.01
-        while True:
-            total_secs = (datetime.now() - self.start_time).total_seconds()
+        start_time = datetime.now()
+        local_start = datetime.now()
+
+        while not self.stop_flag:
+            total_secs = (datetime.now() - start_time).total_seconds()
+            new_q = self._q.copy()
 
             # Joint 0
-            angle = np.pi / self.freq * total_secs
+            angle = np.pi / self.j0_freq * total_secs
             angle = angle % (2 * np.pi)
             angle -= np.pi
-            self._q[0] = angle
+            new_q[0] = angle
 
             # Joint 2
-            deviation = 0.4 * np.sin(np.pi / self.freq * total_secs)
-            self._q[2] = self.q_start[2] + deviation
+            deviation = 0.7 * np.sin(np.pi / self.j2_freq * total_secs)
+            new_q[2] = self.q_start[2] + deviation
 
-            time.sleep(dt)
+            if (datetime.now() - local_start).total_seconds() >= self.buffer_duration:
+                self.buffer.append(new_q.copy())
+                local_start = datetime.now()
+
+            self._q = new_q
 
     def get_joint_angles(self):
         return self._q
 
+    def get_buffer(self):
+        print(f"Buffer has length of {len(self.buffer)}")
+        return self.buffer
+
 
 if __name__ == "__main__":
-    f = FakeController()
-    while True:
-        print(f.get_joint_angles())
-        time.sleep(1)
+    f = FakeController(buffer_duration=0.02)
+    f.start_buffering()
+    time.sleep(3.33)
+    f.stop_buffering()
+    time.sleep(1)
+    print(len(f.get_buffer()))
