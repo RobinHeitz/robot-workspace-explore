@@ -19,7 +19,7 @@ import spatialgeometry as sg
 import spatialmath as sm
 import swift
 
-from fake_controller import FakeController
+from controllers.fake_controller import ControllerProtocol, FakeController
 from mesh_generation import create_mesh
 
 
@@ -122,7 +122,7 @@ def create_collision_shapes_ur5(q, env, robot):
     return shapes
 
 
-def main(controller, duration, stl, *args, **kwargs):
+def main(controller: ControllerProtocol, duration, stl, *args, **kwargs):
     """
     Moves robot and stores the trajectory.
 

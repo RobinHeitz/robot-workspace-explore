@@ -1,4 +1,7 @@
-"""Imitates joint angles that are obtained from free-drive-mode of a real robot."""
+"""
+Imitates joint angles that are obtained from free-drive-mode of a real robot.
+It therefore runs in a thread and updates current joint configuration.
+"""
 
 import threading
 import time
