@@ -76,8 +76,12 @@ def create_mesh(sg_shapes):
 
 
 def run_docker_cmd():
-    print("*** start running docker container")
-    cmd = "docker run --rm -v /Users/robin/dev/robot-workspace-explore/scad_files/:/scad_files/  openscad/openscad:latest openscad -o /scad_files/output.stl /scad_files/mesh.scad"
+    cwd = os.getcwd()
+    print(f"*** start running docker container | {cwd=}")
+    cmd = f"docker run --rm -v {cwd}/scad_files/:/scad_files/  openscad/openscad:latest openscad -o /scad_files/output.stl /scad_files/mesh.scad"
+
+    print("*** Docker cmd used:")
+    print(cmd)
 
     process = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True

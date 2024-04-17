@@ -1,6 +1,12 @@
 """
-This module should demonstrate how to 'sense' collision objects. The goal is that the user uses free-drive to move along the part where no collisions are to be expected.
-Based on the geometry of the robot, the 'useable' workspace can be extracted. The inverse of that should approximate the collision object.
+This module should demonstrate how to 'sense' collision objects. The goal is that the user uses free-drive to move 
+along the part where no collisions are to be expected. Based on the geometry of the robot, the 'useable' workspace 
+can be extracted. The inverse of that should approximate the collision object.
+
+Basic shapes (cylinder & sphere) model the robot arm and are visualized with swift. 
+openpyscad uses these standard geometries to create a .scad file, which is a desgin specific language for the 
+script-based CAD software Openscad. This description of an 3d-object is then executed inside a docker container
+(with openscad installed). The output is a .stl file at ./scad_files.
 """
 
 import argparse
@@ -116,8 +122,16 @@ def create_collision_shapes_ur5(q, env, robot):
     return shapes
 
 
-def main(controller, duration, *args, **kwargs):
-    """Moves robot and stores the trajectory."""
+def main(controller, duration, stl, *args, **kwargs):
+    """
+    Moves robot and stores the trajectory.
+
+    Params:
+    - controller: Controller which provides joint states and can buffer the trajectory.
+    - duration (float): Duration how long the joint capturing should last.
+    - stl (bool): If set, a .stl file is created in the end and saved at ./scad_files/
+    """
+    print(f"main(): {duration=} | {stl=}")
 
     # Add robot to environment 'swift'
     env = swift.Swift()
@@ -158,7 +172,8 @@ def main(controller, duration, *args, **kwargs):
             shapes_cur_pose = create_collision_shapes_ur5(q, env, ur)
             shapes.extend(shapes_cur_pose)
 
-    create_mesh(shapes)
+    if stl:
+        create_mesh(shapes)
     env.hold()
 
 
@@ -167,9 +182,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f",
-        "--fake-controller",
+        "--fake-control",
         action="store_true",
         help="Use fake controller for joint trajectory generation.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--stl",
+        action="store_true",
+        default=False,
+        help="If set, generates .stl file with the collision shapes seen in the visualization tool.",
     )
 
     parser.add_argument(
@@ -213,7 +236,7 @@ if __name__ == "__main__":
     cols = get_colors(alpha=kwargs["alpha"], unique=kwargs["color"])
 
     # Load controller
-    fake_controller = kwargs.pop("fake_controller")
+    fake_controller = kwargs.pop("fake_control")
     if fake_controller:
         controller = FakeController(sample_frequency_hz=kwargs.get("rate", 10))
     else:
@@ -221,3 +244,4 @@ if __name__ == "__main__":
         exit()
 
     main(controller, **kwargs)
+    print("### Finished main()")
