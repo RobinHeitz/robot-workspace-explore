@@ -1,3 +1,7 @@
+"""
+This protocol defines the expected interface of a controller, similar to a subclass.
+"""
+
 from typing import Protocol
 
 

@@ -19,7 +19,9 @@ import spatialgeometry as sg
 import spatialmath as sm
 import swift
 
-from controllers.fake_controller import ControllerProtocol, FakeController
+from controllers.controller_proto import ControllerProtocol
+from controllers.fake_controller import FakeController
+from controllers.ur_controller import URController
 from mesh_generation import create_mesh
 
 
@@ -138,7 +140,8 @@ def main(controller: ControllerProtocol, duration, stl, *args, **kwargs):
     env.launch(realtime=True)
 
     ur = rtb.models.UR5()
-    ur.q = controller.q_start
+    ur.q = controller.get_joint_angles()
+    # ur.q = controller.q_start
     BaseUR = sm.SE3.Tx(0.3) * sm.SE3.Ty(0.3)
     ur.base = BaseUR
     env.add(ur, robot_alpha=0.8, collision_alpha=0)
@@ -239,9 +242,9 @@ if __name__ == "__main__":
     fake_controller = kwargs.pop("fake_control")
     if fake_controller:
         controller = FakeController(sample_frequency_hz=kwargs.get("rate", 10))
+        # controller2 = FakeController2(sample_frequency_hz=kwargs.get("rate", 10))
     else:
-        print("There is no real controller yet! Use -f")
-        exit()
+        controller = URController()
 
     main(controller, **kwargs)
     print("### Finished main()")
