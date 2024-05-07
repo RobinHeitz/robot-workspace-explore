@@ -60,4 +60,25 @@ Then, install it:
 pip3 install -e .
 ```
 
-Run `move_robot.py`, visualization should be shown in new browser tab
+## Usage
+
+`move_robot.py` is the main script. To see available options, run
+
+
+    python move_robot.py -h
+
+To run the script in 'fake' mode, run 
+
+    python move_robot.py -f 
+
+This means, that no real robot is connected to extract the movement from; instead a simple movement is simulated.
+To create an stl file out of this visualization (in the browser), add the -s flag like 
+
+    python move_robot.py -f -s
+
+Another example is 
+
+    python move_robot.py -f -r 5 -d 2 -s 
+
+Which launches the visualization without a real robot (-f: fake controller), a rate of 5 Hz (-r sampling rate of the joint states) and 
+a duration of 2 seconds (-d). Also, the visualization is created as .stl file and saved at ./scad_files/output.stl

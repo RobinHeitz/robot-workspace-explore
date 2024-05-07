@@ -1,8 +1,7 @@
 env
 
 *.pyc
-
-
-scad_files/
+*.stl
+*.scad
 
 __pycache__
