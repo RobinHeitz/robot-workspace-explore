@@ -54,6 +54,12 @@ cd robotics-toolbox-python
 ```
 
 Fix import error of scipy according to [this issue](https://github.com/petercorke/robotics-toolbox-python/issues/412)
+The error is, that scipy does not have a randn function (anymore). Therefore, the import statement needs to be changed to
+
+    from numpy.random import randn
+
+in the file ./robotics-toolbox-python/roboticstoolbox/mobile/EKF.py
+
 Then, install it:
 
 ```
